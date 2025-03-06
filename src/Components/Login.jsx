@@ -19,6 +19,7 @@ function Login() {
 
         try {
             const response = await fetch("https://excelextractor-duh8e4ehhddxd0ar.eastus-01.azurewebsites.net/login", {
+            // const response = await fetch("http://localhost:8000/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
