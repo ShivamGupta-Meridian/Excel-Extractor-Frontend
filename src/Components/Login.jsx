@@ -72,7 +72,7 @@ function Login() {
 </h1>
 
 <form onSubmit={handleSubmit} className="sm:w-2/3 w-full px-4 lg:px-0 mx-auto">
-            {error && <p className="text-red-500">{error}</p>}
+            {error && <p className="text-red-500">Invalid Credentials, Try Again.</p>}
 
             <div className="pb-2 pt-4">
                 <input 
