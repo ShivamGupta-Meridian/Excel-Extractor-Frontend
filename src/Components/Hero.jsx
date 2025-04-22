@@ -63,7 +63,7 @@ function Hero() {
 
     const fetchDownloadHistory = async () => {
         try {
-            const response = await fetch(`${BASE_URL}/download_history/`, {
+            const response = await fetch(`${BASE_URL}/download_history`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`
