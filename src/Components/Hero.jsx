@@ -45,7 +45,7 @@ function Hero() {
 
     const fetchMonthlyCount = async () => {
         try {
-            const response = await fetch(`${BASE_URL}/get_monthly_count`, {
+            const response = await fetch(`${BASE_URL}/get_monthly_count/`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -63,7 +63,7 @@ function Hero() {
 
     const fetchDownloadHistory = async () => {
         try {
-            const response = await fetch(`${BASE_URL}/download_history`, {
+            const response = await fetch(`${BASE_URL}/download_history/`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -176,7 +176,7 @@ function Hero() {
             formData.append("file_url", csvFileUrl);
             formData.append("status", status);
     
-            const response = await fetch(`${BASE_URL}/save_download_history`, {
+            const response = await fetch(`${BASE_URL}/save_download_history/`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -202,7 +202,7 @@ function Hero() {
         try {
           const formData = new FormData();
           formData.append("file_name", fileName);
-          const response = await fetch(`${BASE_URL}/update_download_status`, {
+          const response = await fetch(`${BASE_URL}/update_download_status/`, {
             method: "POST",
             headers: {
               Authorization: `Bearer ${token}`,
