@@ -10,7 +10,7 @@ on:
       - main
 
 env:
-  VITE_API_BASE_URL: https://excelextractor-duh8e4ehhddxd0ar.eastus-01.azurewebsites.net
+  VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
 
 
 jobs:
