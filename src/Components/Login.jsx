@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 function Login() {
     const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-    console.log("Base URL: " + BASE_URL)
+    // console.log("Base URL: " + BASE_URL)
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
