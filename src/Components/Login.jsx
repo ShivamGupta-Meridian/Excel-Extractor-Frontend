@@ -4,13 +4,16 @@ import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 
 
-function Login() {
 
+
+function Login() {
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    // console.log("Base URL: " + BASE_URL)
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+    const navigate = useNavigate(); 
 
     const handleSubmit = async (e) => {
         e.preventDefault();  // Prevent page reload
@@ -18,8 +21,10 @@ function Login() {
         setLoading(true);
 
         try {
-            const response = await fetch("https://excelextractor-duh8e4ehhddxd0ar.eastus-01.azurewebsites.net/login", {
-            // const response = await fetch("http://localhost:8000/login", {
+            // console.log("Logging in with:", email);
+            // console.log("URL : ", `${BASE_URL}/login`);
+            // const response = await fetch("https://excelextractor-duh8e4ehhddxd0ar.eastus-01.azurewebsites.net/login", {
+            const response = await fetch(`${BASE_URL}/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -30,12 +35,13 @@ function Login() {
                 }),
             });
             // console.log("Response: " + response)
-            const data = await response.json();
-            // console.log("Data: " + data)
 
             if (!response.ok) {
-                throw new Error(data.detail || "Login failed");
+                const errorText = await response.text(); // fallback in case JSON fails
+                throw new Error("Login failed: " + errorText);
             }
+            
+            const data = await response.json();
 
             alert("Login successful!");
             // console.log("Token:", data.access_token);
@@ -67,49 +73,49 @@ function Login() {
                         <div className="absolute bg-black opacity-60 inset-0 z-0"></div>
                     </div>
                     <div className="w-full py-6 z-20">
-                    <h1 className="my-6 text-4xl font-bold text-white tracking-wider uppercase drop-shadow-lg">
-    LOGIN
-</h1>
+                        <h1 className="my-6 text-4xl font-bold text-white tracking-wider uppercase drop-shadow-lg">
+                            LOGIN
+                        </h1>
+                        
+                        <form onSubmit={handleSubmit} className="sm:w-2/3 w-full px-4 lg:px-0 mx-auto">
+                                {error && <p className="text-red-500">Invalid Credentials, Try Again.</p>}
 
-<form onSubmit={handleSubmit} className="sm:w-2/3 w-full px-4 lg:px-0 mx-auto">
-            {error && <p className="text-red-500">Invalid Credentials, Try Again.</p>}
+                            <div className="pb-2 pt-4">
+                                <input 
+                                    type="email" 
+                                    name="email" 
+                                    id="email" 
+                                    placeholder="Email" 
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="block w-full p-4 text-lg rounded-sm bg-black text-white"
+                                    required 
+                                />
+                            </div>
 
-            <div className="pb-2 pt-4">
-                <input 
-                    type="email" 
-                    name="email" 
-                    id="email" 
-                    placeholder="Email" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full p-4 text-lg rounded-sm bg-black text-white"
-                    required 
-                />
-            </div>
+                            <div className="pb-2 pt-4">
+                                <input 
+                                    type="password" 
+                                    name="password" 
+                                    id="password" 
+                                    placeholder="Password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="block w-full p-4 text-lg rounded-sm bg-black text-white"
+                                    required 
+                                />
+                            </div>
 
-            <div className="pb-2 pt-4">
-                <input 
-                    type="password" 
-                    name="password" 
-                    id="password" 
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full p-4 text-lg rounded-sm bg-black text-white"
-                    required 
-                />
-            </div>
-
-            <div className="px-4 pb-2 pt-4">
-                <button 
-                    type="submit"
-                    className="uppercase block w-full p-4 text-lg rounded-full bg-indigo-500 hover:bg-indigo-600 focus:outline-none"
-                    disabled={loading}
-                >
-                    {loading ? "Signing in..." : "Sign In"}
-                </button>
-            </div>
-        </form>
+                            <div className="px-4 pb-2 pt-4">
+                                <button 
+                                    type="submit"
+                                    className="uppercase block w-full p-4 text-lg rounded-full bg-indigo-500 hover:bg-indigo-600 focus:outline-none"
+                                    disabled={loading}
+                                >
+                                    {loading ? "Signing in..." : "Sign In"}
+                                </button>
+                            </div>
+                        </form>
 
                     </div>
                 </div>

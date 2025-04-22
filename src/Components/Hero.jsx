@@ -6,31 +6,10 @@ import { DndProvider, useDrag, useDrop } from "react-dnd"; // 🔹 Added for dra
 import { HTML5Backend } from "react-dnd-html5-backend";
 
 
-const FileItem = ({ file, index, moveFile }) => {
-    const [, ref] = useDrag({
-        type: "FILE",
-        item: { index },
-    });
-
-    const [, drop] = useDrop({
-        accept: "FILE",
-        hover: (draggedItem) => {
-            if (draggedItem.index !== index) {
-                moveFile(draggedItem.index, index);
-                draggedItem.index = index;
-            }
-        },
-    });
-
-    return (
-        <span ref={(node) => ref(drop(node))} className="bg-gray-200 px-2 py-1 rounded-md cursor-move">
-            {file.name}
-        </span>
-    );
-};
-
 
 function Hero() {
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+    // console.log("Base URL: " + BASE_URL);
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [outputFileName, setOutputFileName] = useState("");
     const [loading, setLoading] = useState(false);
@@ -38,19 +17,92 @@ function Hero() {
     const [message, setMessage] = useState("");
     const [csvFileUrl, setCsvFileUrl] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false); // 🔹 New state for modal
+    const [monthlyCount, setMonthlyCount] = useState(0); // ✅ Just initialize with 0
+    const [downloadHistory, setDownloadHistory] = useState([]);
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false); // Modal for download history
+    const token = sessionStorage.getItem("token");
     
     // const [monthlyCount, setMonthlyCount] = useState(0); // New state for monthly image count
-    const [monthlyCount, setMonthlyCount] = useState(() => {
-        // 🔹 Load stored count from localStorage (if available)
-        return localStorage.getItem("monthlyCount") 
-            ? parseInt(localStorage.getItem("monthlyCount"), 10) 
-            : 0;
-    });
+    // const [monthlyCount, setMonthlyCount] = useState(() => {
+    //     // 🔹 Load stored count from localStorage (if available)
+    //     return localStorage.getItem("monthlyCount") 
+    //         ? parseInt(localStorage.getItem("monthlyCount"), 10) 
+    //         : 0;
+    // });
     
+    // useEffect(() => {
+    //     // 🔹 Update localStorage whenever monthlyCount changes
+    //     localStorage.setItem("monthlyCount", monthlyCount);
+    // }, [monthlyCount]);
+
     useEffect(() => {
-        // 🔹 Update localStorage whenever monthlyCount changes
-        localStorage.setItem("monthlyCount", monthlyCount);
-    }, [monthlyCount]);
+        
+        if (!token) return;
+
+        fetchMonthlyCount();
+        fetchDownloadHistory();
+    }, []);
+
+    const fetchMonthlyCount = async () => {
+        try {
+            const response = await fetch(`${BASE_URL}/get_monthly_count`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) throw new Error("Failed to fetch monthly count");
+
+            const data = await response.json();
+            setMonthlyCount(data.monthly_api_count);
+        } catch (error) {
+            // console.error("Error fetching monthly count:", error);
+        }
+    };
+
+    const fetchDownloadHistory = async () => {
+        try {
+            const response = await fetch(`${BASE_URL}/download_history/`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) throw new Error("Failed to fetch download history");
+
+            const data = await response.json();
+            setDownloadHistory(data.download_history);
+        } catch (error) {
+            // console.error("Error fetching download history:", error);
+        }
+    };
+
+
+    const FileItem = ({ file, index, moveFile }) => {
+        const [, ref] = useDrag({
+            type: "FILE",
+            item: { index },
+        });
+    
+        const [, drop] = useDrop({
+            accept: "FILE",
+            hover: (draggedItem) => {
+                if (draggedItem.index !== index) {
+                    moveFile(draggedItem.index, index);
+                    draggedItem.index = index;
+                }
+            },
+        });
+    
+        return (
+            <span ref={(node) => ref(drop(node))} className="bg-gray-200 px-2 py-1 rounded-md cursor-move">
+                {file.name}
+            </span>
+        );
+    };
+
 
     const handleFileChange = (event) => {
         const files = Array.from(event.target.files);
@@ -68,6 +120,7 @@ function Hero() {
         const formData = new FormData();
         formData.append("output_file_name", outputFileName || "merged_output.xlsx");
         for (let i = 0; i < selectedFiles.length; i++) {
+            // console.log("FIle:", selectedFiles[i]);
             formData.append("files", selectedFiles[i]);
         }
         const token = sessionStorage.getItem("token"); // Get token from session storage
@@ -82,17 +135,17 @@ function Hero() {
             // for (let [key, value] of formData.entries()) {
             //     console.log(`${key}:`, value);
             // }
-            const response = await fetch("https://excelextractor-duh8e4ehhddxd0ar.eastus-01.azurewebsites.net/extract_merge_tables/", {
-            // const response = await fetch("http://localhost:8000/extract_merge_tables/", {
+            // const response = await fetch("https://excelextractor-duh8e4ehhddxd0ar.eastus-01.azurewebsites.net/extract_merge_tables/", {
+            const response = await fetch(`${BASE_URL}/extract_merge_tables/`, {
                 method: "POST",
                 headers: {
                     Authorization: `Bearer ${token}`, // Send token
                 },
                 body: formData, // Send FormData
             });
-            console.log("Response: " + response)
+            // console.log("Response: " + response)
             const data = await response.json();
-            console.log("data: " + data)
+            // console.log("data: " + data)
             if (!response.ok) {
                 if (response.status === 401 || response.status === 403) {
                     setError("Session expired. Redirecting to login...");
@@ -105,7 +158,6 @@ function Hero() {
             // console.log("Merged Excel URL:", data.merged_excel_url);
             setCsvFileUrl(data.merged_excel_url); // Update the state with the CSV file URL
             setMonthlyCount(data.monthly_api_count); // 🔹 Update Monthly Image Count**
-            localStorage.setItem("monthlyCount", data.monthly_api_count); // 🔹 Persist it
 
         } catch (err) {
             setError(err.message);
@@ -113,6 +165,63 @@ function Hero() {
             setLoading(false);
         }
     };
+
+    const saveDownloadHistory = async (status) => {
+        const token = sessionStorage.getItem("token");
+        if (!token) return;
+    
+        try {
+            const formData = new FormData();
+            formData.append("file_name", outputFileName || "output.xlsx");
+            formData.append("file_url", csvFileUrl);
+            formData.append("status", status);
+    
+            const response = await fetch(`${BASE_URL}/save_download_history`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: formData,
+            });
+
+            // ✅ Refresh the history after saving
+            fetchDownloadHistory();
+    
+            if (!response.ok) {
+                // console.error("Failed to save download history");
+            } else {
+                // console.log("Download history saved:", status);
+            }
+        } catch (error) {
+            // console.error("Error saving download history:", error);
+        }
+    };
+
+
+    const markAsDownloaded = async (fileName) => {
+        try {
+          const formData = new FormData();
+          formData.append("file_name", fileName);
+          const response = await fetch(`${BASE_URL}/update_download_status`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+          });
+        //   console.log("Response: " + response)
+      
+          if (!response.ok) {
+            // console.error("Failed to update download status");
+          } else {
+            // console.log("Status updated to downloaded");
+            fetchDownloadHistory(); // Refresh UI
+          }
+        } catch (error) {
+        //   console.error("Error updating download status:", error);
+        }
+    };      
+
 
     const handleFileValidation = (files) => {
         // Allowed MIME types
@@ -164,6 +273,16 @@ function Hero() {
         setLoading(false);
         setSelectedFiles([]);  // Clear uploaded files if needed
         setOutputFileName(""); // Clear output file name
+        
+        fetchDownloadHistory();
+    };
+
+    const closeHistoryModal = () => {
+        setIsHistoryModalOpen(false);
+    };
+
+    const openHistoryModal = () => {
+        setIsHistoryModalOpen(true);
     };
 
     return (
@@ -185,8 +304,29 @@ function Hero() {
                         </h2>
                     </div>
 
-                    
+                    {/* Add a button to open Download History */}
+                    <button
+                        onClick={openHistoryModal}
+                        className="absolute top-4 right-4 flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-5 py-2.5 rounded-full shadow-lg hover:from-blue-600 hover:to-indigo-600 transition duration-200 ease-in-out"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1M12 12v8m0 0l3-3m-3 3l-3-3M12 4v4m0 0l-3-3m3 3l3-3"
+                            />
+                        </svg>
+                        View History
+                    </button>
 
+                
                     {/* 🔹 Conditional Rendering: Show Upload Form / Loading Animation / Download Section */}
                     {csvFileUrl ? (
                         // 🔹 Excel Download Section
@@ -200,13 +340,22 @@ function Hero() {
                             <a
                                 href={csvFileUrl}
                                 download
+                                onClick={() => {
+                                    saveDownloadHistory("downloaded");
+                                    setTimeout(() => {
+                                        resetForm(); // wait a tiny bit
+                                    }, 500);
+                                }}
                                 className="bg-blue-500 cursor-pointer w-[5/12] text-center mx-auto text-white px-6 py-2 rounded-full hover:bg-blue-600 transition"
                             >
                                 Download File
                             </a>
                             {/* 🔹 Restart Button to Go Back to Form */}
                             <button
-                                onClick={resetForm}
+                                onClick={() => {
+                                    saveDownloadHistory("not_downloaded");
+                                    resetForm();
+                                }}
                                 className="mt-4 bg-gray-500 cursor-pointer w-[5/12] text-center mx-auto text-white px-6 py-2 rounded-full hover:bg-gray-600 transition"
                             >
                                 Try Again
@@ -356,6 +505,77 @@ function Hero() {
                                 className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-md">
                                 Close
                             </button>
+                        </Dialog.Panel>
+                    </div>
+                </Dialog>
+
+                {/* 🔹 Modal for Viewing Download History */}
+                <Dialog open={isHistoryModalOpen} onClose={closeHistoryModal} className="relative z-50">
+                    <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4">
+                        <Dialog.Panel className="bg-white p-6 rounded-lg max-w-md w-full max-h-[70vh] overflow-y-auto shadow-lg">
+                            <Dialog.Title className="text-lg font-bold mb-4 text-center">
+                                Download History
+                            </Dialog.Title>
+                            <div>
+                                {downloadHistory.length > 0 ? (
+                                    <table className="min-w-full table-auto text-sm">
+                                        <thead>
+                                            <tr>
+                                                <th className="py-2 px-4 text-left break-words">File Name</th>
+                                                <th className="py-2 px-4 text-left break-words">Date</th>
+                                                <th className="py-2 px-4 text-left break-words">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {downloadHistory.map((entry, index) => (
+                                                <tr key={index} className="border-t">
+                                                    {/* <td className="py-2 px-4 break-words">{entry.file_name}</td> */}
+                                                    <td className="py-2 px-4 break-words">
+                                                        <a
+                                                          href={entry.file_url}
+                                                          rel="noopener noreferrer"
+                                                          onClick={() => {
+                                                            if (entry.download_status === "not_downloaded") {
+                                                              markAsDownloaded(entry.file_name);  // 👈 Call backend to update status
+                                                              fetchDownloadHistory(); // Refresh UI
+                                                            }
+                                                          }}
+                                                          className="text-blue-600 hover:underline"
+                                                        >
+                                                          {entry.file_name}
+                                                        </a>
+                                                   </td>
+                                                    <td className="py-2 px-4 break-words">
+                                                        {new Date(entry.created_at).toLocaleString()}
+                                                    </td>
+                                                    {/* <td className="py-2 px-4 break-words">{entry.download_status}</td> */}
+                                                    <td className="py-2 px-4 text-center align-middle">
+                                                        <span
+                                                          className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+                                                            entry.download_status === "downloaded"
+                                                              ? "bg-green-100 text-green-800"
+                                                              : "bg-red-100 text-red-800"
+                                                          }`}
+                                                        >
+                                                          {entry.download_status === "downloaded" ? "Downloaded" : "Not Downloaded"}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                ) : (
+                                    <p className="text-center text-gray-500">No download history available</p>
+                                )}
+                            </div>
+                            <div className="mt-6 flex justify-center">
+                                <button
+                                    onClick={closeHistoryModal}
+                                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition duration-200"
+                                >
+                                    Close
+                                </button>
+                            </div>
                         </Dialog.Panel>
                     </div>
                 </Dialog>
