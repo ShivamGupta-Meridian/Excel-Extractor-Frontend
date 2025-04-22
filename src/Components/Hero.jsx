@@ -310,7 +310,7 @@ function Hero() {
                         className="absolute top-4 right-4 flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-5 py-2.5 rounded-full shadow-lg hover:from-blue-600 hover:to-indigo-600 transition duration-200 ease-in-out"
                     >
                         <svg
-                            xmlns="http://www.w3.org/2000/svg"
+                            xmlns="https://www.w3.org/2000/svg"
                             className="h-5 w-5"
                             fill="none"
                             viewBox="0 0 24 24"
