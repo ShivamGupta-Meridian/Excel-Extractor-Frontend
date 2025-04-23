@@ -9,7 +9,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 
 function Hero() {
     const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-    // console.log("Base URL: " + BASE_URL);
+    console.log(" Hero Base URL: " + BASE_URL);
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [outputFileName, setOutputFileName] = useState("");
     const [loading, setLoading] = useState(false);
