@@ -23,6 +23,7 @@ function Login() {
         try {
             // console.log("Logging in with:", email);
             // console.log("URL : ", `${BASE_URL}/login`);
+            console.log("Final request URL:", `${BASE_URL}/login`);
             // const response = await fetch("https://excelextractor-duh8e4ehhddxd0ar.eastus-01.azurewebsites.net/login", {
             const response = await fetch(`${BASE_URL}/login`, {
                 method: "POST",
