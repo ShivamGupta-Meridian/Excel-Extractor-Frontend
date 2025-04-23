@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 function Login() {
     const BASE_URL = import.meta.env.VITE_API_BASE_URL;
-    console.log("Base URL: " + BASE_URL)
+    // console.log("Base URL: " + BASE_URL)
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -23,7 +23,7 @@ function Login() {
         try {
             // console.log("Logging in with:", email);
             // console.log("URL : ", `${BASE_URL}/login`);
-            console.log("Final request URL:", `${BASE_URL}/login`);
+            // console.log("Final request URL:", `${BASE_URL}/login`);
             // const response = await fetch("https://excelextractor-duh8e4ehhddxd0ar.eastus-01.azurewebsites.net/login", {
             const response = await fetch(`${BASE_URL}/login`, {
                 method: "POST",
