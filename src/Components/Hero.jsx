@@ -17,7 +17,7 @@ function Hero() {
     const [message, setMessage] = useState("");
     const [csvFileUrl, setCsvFileUrl] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false); // 🔹 New state for modal
-    const [monthlyCount, setMonthlyCount] = useState(0); // ✅ Just initialize with 0
+    const [monthlyCount, setMonthlyCount] = useState(null); // ✅ Just initialize with null
     const [downloadHistory, setDownloadHistory] = useState([]);
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false); // Modal for download history
     const token = sessionStorage.getItem("token");
@@ -300,7 +300,11 @@ function Hero() {
                     {/* Monthly Image Count Display */}
                     <div className="text-center mb-4">
                         <h2 className="text-m font-semibold text-gray-700">
-                            Monthly Image Count: <span className="text-blue-500">{monthlyCount}</span>
+                            {/* Monthly Image Count: <span className="text-blue-500">{monthlyCount}</span> */}
+                            Monthly Image Count:{" "}
+                            <span className="text-blue-500">
+                                {monthlyCount === null ? "Loading..." : monthlyCount}
+                            </span>
                         </h2>
                     </div>
 
